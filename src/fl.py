@@ -23,7 +23,7 @@ class FL:
         self.eval_interval = int(self.config["FL"]["eval_interval"])
 
     def start(self):
-        """Starts the FL communication rounds between the server and clients."""
+        #Starts the FL communication rounds between the server and clients.
 
         # Loads the training and testing data of the FL simumation
         data_train, data_test = load_data(self.config)
@@ -90,11 +90,11 @@ class FL:
                 self.write_result(result_table)
 
     def write_result(self, result_table):
-        """ Writes simulation results into a result.txt file
+        # Writes simulation results into a result.txt file
 
-        Args:
-            result_table: a 2-d numpy array contraining rows of simulation results
-        """
+        #Args:
+        #    result_table: a 2-d numpy array contraining rows of simulation results
+
         if self.is_mpi:
             results_path = os.path.join(self.results_path, f"rep_{self.rank}")
         else:
@@ -102,3 +102,5 @@ class FL:
         Path(results_path).mkdir(parents=True, exist_ok=True)
         np.savetxt(os.path.join(results_path, "results.txt"),
                    result_table, delimiter=",", fmt="%1.4e")
+#import pip
+#pip.main(["install","scikit-learn"])
