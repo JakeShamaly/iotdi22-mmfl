@@ -551,8 +551,8 @@ def download_UR_fall():
 
 
 if __name__ == "__main__":
-    # gen_opp("data")
-    # gen_mhealth("data")
-    # download_UR_fall()
-    # gen_ur_fall("data")
+    gen_opp("data")
+    #gen_mhealth("data")
+    #download_UR_fall()
+    #gen_ur_fall("data")
     pass

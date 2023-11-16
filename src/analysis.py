@@ -164,10 +164,11 @@ def single_multi_modality_comparison():
                 plt.xticks(fontsize="large")
                 plt.yticks(fontsize="large")
 
-                schemes = {"client_A_label_A_test_A": "A30_B0_AB0_label_A_test_A",
-                           "client_B_label_B_test_B": "A0_B30_AB0_label_B_test_B",
-                           "client_AB_label_AB_test_A": "A0_B0_AB30_label_AB_test_A",
-                           "client_AB_label_AB_test_B": "A0_B0_AB30_label_AB_test_B", }
+                schemes = {"client_AB_label_AB_test_B": "A0_B0_AB30_label_AB_test_B", }
+                #schemes = {"client_A_label_A_test_A": "A30_B0_AB0_label_A_test_A",
+                #           "client_B_label_B_test_B": "A0_B30_AB0_label_B_test_B",
+                #           "client_AB_label_AB_test_A": "A0_B0_AB30_label_AB_test_A",
+                #           "client_AB_label_AB_test_B": "A0_B0_AB30_label_AB_test_B", }
                 legends = {"client_A_label_A_test_A": "$\mathregular{UmFL_A}$",
                            "client_B_label_B_test_B": "$\mathregular{UmFL_B}$",
                            "client_AB_label_AB_test_A": "$\mathregular{MmFL_{AB}-L_{AB}-T_A}$",
