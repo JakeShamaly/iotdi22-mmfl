@@ -57,7 +57,7 @@ from fl import FL
 
 def read_config():
     config = configparser.ConfigParser()
-    config.read('/Users/emraf/OneDrive/Documents/GitHub/iotdi22-mmfl/config/opp/dccae/A0_B0_AB30_label_A_test_B')
+    config.read('/Users/emraf/OneDrive/Documents/GitHub/iotdi22-mmfl/config/opp/ablation/A30_B30_AB0_label_B_test_A')
 
     return config
 
