@@ -178,7 +178,6 @@ def single_multi_modality_comparison():
                         "--" if color_idx == 0 else (0, (5, 10)))
                     test_acc = []
                     
-                    # EVAN FIX THIS PART!
                     rep_file = os.path.join("results", dataset.lower(), ae, f"{modalities[0]}_{modalities[1]}", schemes[k], "results.txt")
                     data = np.loadtxt(rep_file, delimiter=",")
                     x_all = data[:, 0]
@@ -186,8 +185,7 @@ def single_multi_modality_comparison():
                     x = x_all[idxs_round_cut]
                     y_rep = data[idxs_round_cut, METRIC_INDEX]
                     y_rep[y_rep == 0.0] = np.nan
-                    test_acc.append(y_rep)
-                        
+                    test_acc.append(y_rep) 
                         
                     y = np.nanmean(np.array(test_acc), axis=0)
                     ax.plot(
@@ -261,7 +259,6 @@ def cross_modality_comparison():
                             "-" if color_idx == 1 else "dashdot") if color_idx != 0 and color_idx != 5 else "--" if color_idx == 0 else "dotted"
                         test_acc = []
                         
-                        
                         if "ablation" not in k:
                             rep_file = os.path.join(
                                 "results", dataset.lower(), ae, f"{modalities[0]}_{modalities[1]}", schemes[k][1], "results.txt")
@@ -295,10 +292,91 @@ def cross_modality_comparison():
                 plt.savefig(f"plots/cross_modality_comparison_{dataset}_{ae}_{modalities[0]}_{modalities[1]}.pdf",
                             bbox_inches="tight")
 
+def per_class_statistics():
+    # Initialize lists of files, accuracies, and counts
+    files = [
+        "A0_B0_AB30_label_A_test_B",
+        "A0_B0_AB30_label_AB_test_A",
+        "A0_B0_AB30_label_AB_test_B",
+        "A0_B0_AB30_label_B_test_A",
+        "A0_B10_AB30_label_A_test_B",
+        "A0_B10_AB30_label_B_test_A",
+        "A0_B30_AB0_label_B_test_B",
+        "A10_B0_AB30_label_A_test_B",
+        "A10_B0_AB30_label_B_test_A",
+        "A10_B10_AB30_label_A_test_B",
+        "A10_B10_AB30_label_B_test_A",
+        "A30_B0_AB0_label_A_test_A"
+    ]
+    ablation_files = [
+        "A30_B30_AB0_label_A_test_B",
+        "A30_B30_AB0_label_B_test_A"
+    ]
+    overall_class_accs = []     # List of overall accuracies for each class
+    class_counts = []           # List of counts of data points for each class
+    
+    # I hardcode this 18 value since, for our purposes, we will only be looking at per-class data for the opp dataset
+    # The opp dataset has 18 classes, while others have different values (mHealth has 13 and URFall has 3)
+    # Of course, I could modify this code to support the others, but getting the results for those datasets
+    # would require hours of running main.py which, due to my laptop not having CUDA, isn't ideal
+    for i in range(18):
+        overall_class_accs.append(0)
+    
+    # DCCAE files
+    for file in files:
+        # Import the data
+        filename = "/Users/emraf/OneDrive/Documents/GitHub/iotdi22-mmfl/results/opp/dccae/acce_gyro/" + file + "/results.txt"
+        data = np.loadtxt(filename, delimiter=",")
+        
+        # Grab the number of points per class 
+        # Only do on the first file, since all file use the same data, so it's redundant to do it for them all
+        if file == "A0_B0_AB30_label_A_test_B":
+            for i in range(25,43):
+                class_counts.append(int(data[49,i]))
+            
+        # Grab the accuracy for each class
+        for j in range(7,25):
+            overall_class_accs[j-7] += data[49,j]
+            
+    # Ablation files
+    for file in ablation_files:
+        filename = "/Users/emraf/OneDrive/Documents/GitHub/iotdi22-mmfl/results/opp/ablation/acce_gyro/" + file + "/results.txt"
+        data = np.loadtxt(filename, delimiter=",")
+            
+        # Grab the accuracy for each class
+        for j in range(7,25):
+            overall_class_accs[j-7] += data[49,j]
+    
+    # As of right now, the overall class accuracies are just the sum of all the accuracies from all tests
+    # Hence, we divide each value by 14 (the number of tests) to get the average accuracy across all tests for each class
+    for i in range(len(overall_class_accs)):
+        overall_class_accs[i] = overall_class_accs[i] / (len(files) + len(ablation_files))
+    
+    # There are 18 classes in the opp dataset
+    classes = range(18)
+    
+    # Display the number of data points per class
+    plt.figure()
+    plt.bar(classes, class_counts, color='blue', width=0.7)
+    plt.xticks(classes)
+    plt.xlabel("Class Number", fontsize="x-large")
+    plt.ylabel("Data Points", fontsize="x-large")
+    plt.title("Number of Data Points Per Class")
+    
+    # Display per-class accuracy
+    plt.figure()
+    plt.bar(classes, overall_class_accs, color='green', width=0.7)
+    plt.xticks(classes)
+    plt.xlabel("Class Number", fontsize="x-large")
+    plt.ylabel("Accuracy", fontsize="x-large")
+    plt.title("Per-Class Accuracy")
+    plt.show()
+    
 
 def main():
     single_multi_modality_comparison()
     cross_modality_comparison()
+    per_class_statistics()
 
 
 if __name__ == "__main__":

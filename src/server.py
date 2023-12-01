@@ -219,6 +219,14 @@ class Server:
         Returns:
             A tuple containing loss and accuracy values
         """
+        # PER CLASS ACCURACY SET UP
+        # First, we need the number of points in each class and the number of classes
+        # np.unique is perfect for this, as it returns both, so we store those for use later
+        classes, counts = np.unique(data_test["y"], return_counts=True)
+        accs = []       # Keeps track of # of correct guesses per class
+        for i in range(len(classes)):
+            accs.append(0)
+        
         self.global_ae.eval()
         self.global_sv.eval()
         if self.criterion == "CrossEntropyLoss":
@@ -229,19 +237,20 @@ class Server:
         elif self.test_modality == "B":
             x_samples = np.expand_dims(data_test["B"], axis=0)
         y_samples = np.expand_dims(data_test["y"], axis=0)
-
+        
+        
         win_loss = []
         win_accuracy = []
         win_f1 = []
         n_samples = x_samples.shape[1]
         n_eval_process = n_samples // EVAL_WIN + 1
-
+        
         for i in range(n_eval_process):
             idx_start = i * EVAL_WIN
             idx_end = np.min((n_samples, idx_start+EVAL_WIN))
             x = x_samples[:, idx_start:idx_end, :]
             y = y_samples[:, idx_start:idx_end]
-
+            
             inputs = torch.from_numpy(x).double().to(self.device)
             targets = torch.from_numpy(y.flatten()).to(self.device)
             rpts = self.global_ae.encode(inputs, self.test_modality)
@@ -250,7 +259,14 @@ class Server:
             loss = criterion(output, targets.long())
             top_p, top_class = output.topk(1, dim=1)
             equals = top_class == targets.view(*top_class.shape).long()
+            
+            # Increment per-class accs based on whether our guess was correct or not
+            for i in range(len(targets.view(*top_class.shape).long())):
+                if(equals[i]): 
+                    accs[targets.view(*top_class.shape).long()[i].numpy()[0]] += 1
+                
             accuracy = torch.mean(equals.type(torch.FloatTensor))
+
             np_gt = y.flatten()
             np_pred = top_class.squeeze().cpu().detach().numpy()
             weighted_f1 = f1_score(np_gt, np_pred, average="weighted")
@@ -262,6 +278,11 @@ class Server:
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 
-        return np.mean(win_loss), np.mean(win_accuracy), np.mean(win_f1)
-        #EVAN EVAN EVAN
-        #return np.mean(win_loss), np.mean(win_accuracy), np.mean(win_weighted_f1)
+        # Per class accuracy calculation and output
+        for i in range(len(accs)):
+            accs[i] = accs[i] / counts[i]
+            print(i, ": ", accs[i], sep='')
+        print("AVG OF CLASS ACCS:", sum(accs) / len(accs))
+        print("THEIR REPORTED ACC:", np.mean(win_accuracy))
+        
+        return np.mean(win_loss), np.mean(win_accuracy), np.mean(win_f1), accs, counts

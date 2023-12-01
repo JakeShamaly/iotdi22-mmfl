@@ -58,7 +58,7 @@ class FL:
 
         n_eval_point = math.ceil(self.rounds / self.eval_interval)
         # result table: round, local_ae_loss, train_loss, train_accuracy, test_loss, test_accuracy, test_f1
-        result_table = np.zeros((n_eval_point, 7))
+        result_table = np.zeros((n_eval_point, 43))
         result_table[:, 0] = np.arange(1, self.rounds+1, self.eval_interval)
         row = 0
 
@@ -82,10 +82,11 @@ class FL:
                 continue
             else:
                 with torch.no_grad():
-                    test_loss, test_accuracy, test_f1 = server.eval(
+                    test_loss, test_accuracy, test_f1, per_class_acc, per_class_count = server.eval(
                         server_test)
-                result_table[row] = np.array(
-                    (t+1, local_ae_loss, train_loss, train_accuracy, test_loss, test_accuracy, test_f1))
+                class_stuff = np.append(per_class_acc, per_class_count)
+                result_table[row] = np.append(np.array(
+                    (t+1, local_ae_loss, train_loss, train_accuracy, test_loss, test_accuracy, test_f1)), class_stuff)
                 row += 1
                 self.write_result(result_table)
 
