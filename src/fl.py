@@ -82,11 +82,9 @@ class FL:
                 continue
             else:
                 with torch.no_grad():
-                    test_loss, test_accuracy, test_f1, per_class_acc, per_class_count = server.eval(
-                        server_test)
+                    test_loss, test_accuracy, test_f1, per_class_acc, per_class_count = server.eval(server_test)
                 class_stuff = np.append(per_class_acc, per_class_count)
-                result_table[row] = np.append(np.array(
-                    (t+1, local_ae_loss, train_loss, train_accuracy, test_loss, test_accuracy, test_f1)), class_stuff)
+                result_table[row] = np.append(np.array((t+1, local_ae_loss, train_loss, train_accuracy, test_loss, test_accuracy, test_f1)), class_stuff)
                 row += 1
                 self.write_result(result_table)
 
